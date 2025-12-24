@@ -10,6 +10,23 @@ dependencies = []
 requires = ["uv_build>=0.9.18,<0.10.0"]
 build-backend = "uv_build"
 
-
 [tool.pyright]
 reportExplicitAny = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+
+[dependency-groups]
+dev = [
+    "coverage>=7.13.0",
+    "py-spy>=0.4.1",
+    "pyinstrument>=5.1.1",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    "pytest-cov>=7.0.0",
+]
+fast = [
+    "graphlib2>=0.4.7",
+]

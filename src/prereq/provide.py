@@ -2,56 +2,50 @@
 from abc import ABC
 from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable, Generator, Iterator
 from contextlib import asynccontextmanager, contextmanager
-from dataclasses import dataclass
 from enum import Enum
 from inspect import isasyncgenfunction, isclass, iscoroutinefunction, isgeneratorfunction, signature
-from typing import Any, AsyncContextManager, ContextManager, Literal, Protocol, get_origin, get_type_hints, overload
+from typing import Any, AsyncContextManager, ContextManager, Literal, NamedTuple, Protocol, get_origin, get_type_hints, overload
 
-@dataclass(kw_only=True)
-class ProviderSpec[T, S: bool, I: bool, F: Callable[..., Any]]:
+class ProviderSpec[T, F: Callable[..., Any]](NamedTuple):
     coverage: list[type[T] | type[Any]]
     args: dict[str, type[Any]]
     level: int
     never_cache: bool
-    sync: S
-    iterator: I
     factory: F
 
 
-@dataclass(kw_only=True)
-class SyncProvider[**P, T](ProviderSpec[T, True, False, Callable[P, T]]):
-    sync: Literal[True] = True
-    iterator: Literal[False] = False
-
+class SyncProvider[**P, T](ProviderSpec[T, Callable[P, T]]):
     def __call__(self, *args: P.args, **kwds: P.kwargs) -> T:
         return self.factory(*args, **kwds)
 
 
-@dataclass(kw_only=True)
-class SyncProviderGen[**P, T](ProviderSpec[T, True, True, Callable[P, Iterator[T]]]):
-    sync: Literal[True] = True
-    iterator: Literal[True] = True
+class SyncProviderGen[**P, T](ProviderSpec[T, Callable[P, Iterator[T]]]):
 
     def __call__(self, *args: P.args, **kwds: P.kwargs) -> ContextManager[T]:
         return contextmanager(self.factory)(*args, **kwds)
 
 
-@dataclass(kw_only=True)
-class AsyncProvider[**P, T](ProviderSpec[T, False, False, Callable[P, Awaitable[T]]]):
-    sync: Literal[False] = False
-    iterator: Literal[False] = False
+class AsyncProvider[**P, T](ProviderSpec[T, Callable[P, Awaitable[T]]]):
 
     async def __call__(self, *args: P.args, **kwds: P.kwargs) -> T:
         return await self.factory(*args, **kwds)
 
 
-@dataclass(kw_only=True)
-class AsyncProviderGen[**P, T](ProviderSpec[T, False, True, Callable[P, AsyncIterator[T]]]):
-    sync: Literal[False] = False
-    iterator: Literal[True] = True
+class AsyncProviderGen[**P, T](ProviderSpec[T, Callable[P, AsyncIterator[T]]]):
 
     def __call__(self, *args: P.args, **kwds: P.kwargs) -> AsyncContextManager[T]:
         return asynccontextmanager(self.factory)(*args, **kwds)
+
+
+def _get_parents(typ: type[Any]) -> list[Any]:
+    stop_types = (object, type, Protocol, ABC)
+    total: list[type[Any]] = []
+    for base in typ.__bases__:
+        if base not in stop_types:
+            total.append(base)
+            total += _get_parents(base)
+
+    return total
 
 Providers = SyncProvider[Any, Any] | SyncProviderGen[Any, Any] | AsyncProvider[Any, Any] | AsyncProviderGen[Any, Any]
 
@@ -59,19 +53,19 @@ class ProviderWrapper[**P, T](Protocol):
 
     @overload
     @staticmethod
-    def __call__(factory: Callable[P, Awaitable[T]]) -> AsyncProvider[P, T]: ...
+    def __call__(factory: Callable[P, Awaitable[T]]) -> AsyncProvider[..., Any]: ...
 
     @overload
     @staticmethod
-    def __call__(factory: Callable[P, AsyncGenerator[T]]) -> AsyncProviderGen[P, T]: ...
+    def __call__(factory: Callable[P, AsyncGenerator[T]]) -> AsyncProviderGen[..., Any]: ...
 
     @overload
     @staticmethod
-    def __call__(factory: Callable[P, Generator[T]]) -> SyncProviderGen[P, T]: ...
+    def __call__(factory: Callable[P, Generator[T]]) -> SyncProviderGen[..., Any]: ...
 
     @overload
     @staticmethod
-    def __call__(factory: Callable[P, T]) -> SyncProvider[P, T]: ...
+    def __call__(factory: Callable[P, T]) -> SyncProvider[..., Any]: ...
 
 
 @overload
@@ -122,17 +116,6 @@ def provides[**P, T](
     cover_parents: bool = True,
     never_cache: bool = False,
 ) -> ProviderWrapper[P, T]: ...
-
-def _get_parents(typ: type[Any]) -> list[Any]:
-    stop_types = (object, type, Protocol, ABC)
-    total: list[type[Any]] = []
-    for base in typ.__bases__:
-        if base not in stop_types:
-            total.append(base)
-            total += _get_parents(base)
-
-    return total
-
 
 def provides[**P, T](
     factory: None | \

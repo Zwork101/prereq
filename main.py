@@ -44,9 +44,11 @@ def gimme(a: A, b: B, c: C) -> str:
     return "done"
 
 resolver = Resolver()
-resolver.add_provider(create_a)
-resolver.add_provider(create_b)
-resolver.add_provider(create_c)
+resolver.add_providers(
+    create_a,
+    create_b,
+    create_c
+)
 
 async def main() -> None:
     async with resolver() as subresolver:
