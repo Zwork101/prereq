@@ -1,11 +1,16 @@
-"""Test Synchronous Functions."""
+"""Test Asynchronous Functions."""
 
 from collections import Counter
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from typing import Protocol
 
-from prereq import Resolver, SyncProvider, SyncProviderGen, provides
+from prereq import (
+    AsyncProvider,
+    AsyncProviderGen,
+    Resolver,
+    provides,
+)
 
 
 @dataclass
@@ -33,36 +38,36 @@ class D:
     value: int
 
 
-async def test_sync() -> None:
+async def test_async() -> None:
     called_counter = Counter[str]()
 
     @provides(never_cache=True)
-    def create_a() -> A:
+    async def create_a() -> A:
         called_counter["A"] += 1
         return A(value=10)
 
-    assert isinstance(create_a, SyncProvider)
+    assert isinstance(create_a, AsyncProvider)
 
     @provides
-    def create_b(a: A) -> Generator[B]:
+    async def create_b(a: A) -> AsyncGenerator[B]:
         called_counter["B"] += 1
         yield B(value=10 + a.value, name="B")
 
-    assert isinstance(create_b, SyncProviderGen)
+    assert isinstance(create_b, AsyncProviderGen)
 
     @provides
-    def create_c(a: A, b: B) -> C:
+    async def create_c(a: A, b: B) -> C:
         called_counter["C"] += 1
         return C(value=10 + a.value + b.value)
 
-    assert isinstance(create_c, SyncProvider)
+    assert isinstance(create_c, AsyncProvider)
 
     @provides
-    def create_d(a: A, b: B, c: C) -> D:
+    async def create_d(a: A, b: B, c: C) -> D:
         called_counter["D"] += 1
         return D(value=10 + a.value + b.value + c.value)
 
-    assert isinstance(create_d, SyncProvider)
+    assert isinstance(create_d, AsyncProvider)
 
     def test_func(d: D) -> None:
         assert d.value == (10 + 10 + 20 + 40)
@@ -84,25 +89,3 @@ async def test_sync() -> None:
         "C": 1,
         "D": 1,
     }
-
-async def test_custom_cache() -> None:
-
-    @provides
-    def create_b(a: A) -> Generator[B]:
-        yield B(value=10 + a.value, name="B")
-
-    def test_b(b: B) -> None:
-        assert b.value == 15  # noqa: PLR2004
-        assert b.name == "B"
-
-    resolver = Resolver()
-    resolver.add_providers(create_b)
-    async with (
-        resolver({A: A(5)}) as second,
-        second.resolve(test_b) as kwargs,
-    ):
-        test_b(**kwargs)  # pyright: ignore[reportAny]
-
-    async with resolver.resolve(test_b, {A: A(5)}) as kwargs:
-        test_b(**kwargs)  # pyright: ignore[reportAny]
-

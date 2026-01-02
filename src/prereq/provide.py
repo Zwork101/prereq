@@ -29,10 +29,8 @@ from inspect import (
 )
 from typing import (
     Any,
-    Literal,
     NamedTuple,
     Protocol,
-    get_origin,
     get_type_hints,
     overload,
 )
@@ -291,8 +289,8 @@ def provides[**P, T](  # noqa: C901
                 raise TypeError(missing_return)
 
             no_literal = f"{factory} cannot provide a Literal value."
-            if get_origin(returns) is Literal:
-                raise TypeError(no_literal)
+            if not isinstance(returns, type):  # pyright: ignore[reportUnnecessaryIsInstance]
+                raise TypeError(no_literal)  # pyright: ignore[reportUnreachable]
 
             coverage = [returns]
 

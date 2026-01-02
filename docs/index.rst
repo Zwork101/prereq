@@ -1,3 +1,16 @@
+Installing Prereq
+=================
+
+Prereq has no dependencies. Installing is as simple as:
+
+.. code-block:: bash
+
+    pip install prereq
+
+    # Or
+
+    uv add prereq
+
 Prereq: What & Why?
 ===================
 
