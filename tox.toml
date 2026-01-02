@@ -1,0 +1,25 @@
+requires = ["tox>=4"]
+env_list = ["lint", "type", "3.14", "3.13", "3.12"]
+
+[env_run_base]
+description = "run unit tests"
+deps = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    "pytest-cov>=7.0.0"
+]
+commands = [["pytest", { replace = "posargs", default = ["tests"], extend = true }]]
+
+[env.lint]
+description = "run linters"
+deps = [
+    "ruff>=0.14.10"
+]
+commands = [["ruff", "check", { replace = "posargs", default = ["src"], extend = true} ]]
+
+[env.type]
+description = "run type checks"
+deps = [
+    "basedpyright>=1.36.2"
+]
+commands = [["basedpyright", { replace = "posargs", default = ["src"], extend = true} ]]

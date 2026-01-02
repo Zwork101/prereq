@@ -13,6 +13,7 @@ wheels/
 .coverage
 htmlcov/
 *.prof
+.tox/
 
 # Docs
 docs/_build
