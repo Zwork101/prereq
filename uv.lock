@@ -373,7 +373,7 @@ wheels = [
 
 [[package]]
 name = "prereq"
-version = "0.1.0a0"
+version = "0.1.0b0"
 source = { editable = "." }
 
 [package.dev-dependencies]
