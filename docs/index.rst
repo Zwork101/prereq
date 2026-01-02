@@ -4,12 +4,11 @@ Installing Prereq
 Prereq has no dependencies. Installing is as simple as:
 
 .. code-block:: bash
+   pip install prereq
 
-    pip install prereq
+   # Or
 
-    # Or
-
-    uv add prereq
+   uv add prereq
 
 Prereq: What & Why?
 ===================
@@ -19,29 +18,29 @@ This comes with a `multitude of benefits <https://github.com/cosmicpython/book/b
 , best of all being very clean code!
 
 .. code-block:: python
-    :caption: Prereq Example
+   :caption: Prereq Example
 
-    import asyncio
-    from database import session_maker, Session
-    from prereq import provides, Resolver
+   import asyncio
+   from database import session_maker, Session
+   from prereq import provides, Resolver
 
-    @provides
-    def create_config() -> Session:
-        with session_maker() as session:
-            yield session
+   @provides
+   def create_config() -> Session:
+       with session_maker() as session:
+           yield session
 
-    resolver = Resolver()
-    resolver.add_providers(create_config)
+   resolver = Resolver()
+   resolver.add_providers(create_config)
 
-    def get_user(username: str, session: Session):
-        return session.get_user(username)
+   def get_user(username: str, session: Session):
+       return session.get_user(username)
 
-    async def main():
-        async with resolver.resolve(get_user) as kwargs:
-            user = get_user("my_username", **kwargs)
+   async def main():
+       async with resolver.resolve(get_user) as kwargs:
+           user = get_user("my_username", **kwargs)
 
-    if __name__ == "__main__":
-        asyncio.run(main())
+   if __name__ == "__main__":
+       asyncio.run(main())
 
 Why Prereq?
 ***********
@@ -61,9 +60,9 @@ was looking for. Small projects had other problems, such as `poor async support 
 `scope-naive dependencies <https://maldoinc.github.io/wireup/latest/lifetimes_and_scopes/#creating-scopes>`__.
 
 Those libraries are capable, but don't coincide with my needs. Later on I found `ididi <https://github.com/raceychan/ididi>`__,
-which is close to what I wanted. But for reasons unknown to me, it's implemention is complex, and contains
+which is close to what I wanted. But for reasons unknown to me, its implementation is complex, and contains
 `undesirable magic <https://github.com/raceychan/ididi/blob/c43e6d8e79d61a8db8cc6e35f64345405216ae51/ididi/graph.py#L358>`__.
-Dissapointed but not detered, I created Prereq with the following goals:
+Disappointed but not deterred, I created Prereq with the following goals:
 
 #. Offer all the benefits DI can provide.
 #. Remain simple in design and scope.

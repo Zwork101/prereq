@@ -31,9 +31,9 @@ or yield only once, an instance of the type they're providing. Say we have the f
             (implementation)
 
 `JSONDatabase` implements the `Database` protocol, and offers an additional `read_book` method. Creating parent Protocols
-or abstract classes for your dependencies is prefered to maximize the benefits of dependency injection. However this
+or abstract classes for your dependencies is preferred to maximize the benefits of dependency injection. However this
 is not always feasible, especially for third-party tools. Then create a provider in one of two ways. You can create a
-seperate function:
+separate function:
 
 .. code-block:: python
     :caption: Function Provider
@@ -71,7 +71,7 @@ Or, create a class method on JSONDatabase and make that a provider.
             db = cls(os.environ["DB_URI"])
             try:
                 yield db
-            finally: # Try-finally isn't nessesary for prereq, but a good practice all the same.
+            finally: # Try-finally isn't necessary for prereq, but a good practice all the same.
                 db.close()
 
 The function can also be async, and can return the value instead of yielding. In both of these examples, the a provider
@@ -83,7 +83,7 @@ and binds the resolver that type, and that type's parents. So create_database wi
 type, and the `Database` type. To only provide to the `JSONDatabase` type, add the `cover_parents=False` kwargs.
 Alternatively, you can directly set what types are provided using the `coverage` kwarg.
 
-Setting `level=2` tells the resolvers let the level 2 resolver to handle this provider. What this means depends
+Setting `level=2` tells the resolvers to let the level 2 resolver handle this provider. What this means depends
 entirely on how Prereq is being used. For example, a web server might have all app lifetime providers at level 1,
 and request lifetime providers at level 2. Providers can have dependencies that are on the same level, a
 lower level, but not a higher level. The default level is 1.
@@ -163,20 +163,20 @@ will only provide the dependencies.
 Potential Pitfalls
 ==================
 
-Prereq isn't providing all the arguements in the function signature?
+Prereq isn't providing all the arguments in the function signature?
 --------------------------------------------------------------------
 
 This is likely the result of the following issues:
 
 #. No provider exists for the type not being injected. It may not have been added to the Resolver, or added to an unrelated Resolver.
 #. The provider operates at a higher level than the Resolver, and as such the Resolver could not find the provider.
-#. The dependency is not typed, and therefor ignored by the Resolver. 
+#. The dependency is not typed, and therefore ignored by the Resolver.
 
-How do I add a dependency for a primative type? Or two different dependencies of the same type?
+How do I add a dependency for a primitive type? Or two different dependencies of the same type?
 -----------------------------------------------------------------------------------------------
 
-Both of these scenarios are unlikely, especially wanting to inject a primative type. But, it can still be done a few ways. The simplest is
-to use :py:class:`typing.NewType` and create a subclass of the primative or duplicate type. 
+Both of these scenarios are unlikely, especially wanting to inject a primitive type. But, it can still be done in a few ways. The simplest is
+to use :py:class:`typing.NewType` and create a subclass of the primitive or duplicate type.
 
 .. code-block:: python
     :caption: NewType Example
@@ -192,7 +192,7 @@ to use :py:class:`typing.NewType` and create a subclass of the primative or dupl
     PostgresSession = NewType("PostgresSession", Session)
 
     @provides
-    def get_memeory() -> MemoryUsage: ...
+    def get_memory() -> MemoryUsage: ...
 
     @provides(cover_parents=False)
     def maria_connection() -> MariaSession: ...
