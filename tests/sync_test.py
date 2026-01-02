@@ -1,7 +1,11 @@
+"""Test Synchronous Functions."""
+
 from collections import Counter
 from dataclasses import dataclass
 from typing import Protocol
-from prereq import provides, Resolver
+
+from prereq import Resolver, provides
+
 
 @dataclass
 class A:
@@ -45,7 +49,6 @@ async def test_normal() -> None:
     def create_c(a: A, b: B) -> C:
         called_counter["C"] += 1
         return C(value=10 + a.value + b.value)
-    
 
     @provides
     def create_d(a: A, b: B, c: C) -> D:
@@ -60,7 +63,7 @@ async def test_normal() -> None:
         create_a,
         create_b,
         create_c,
-        create_d
+        create_d,
     )
 
     async with resolver.resolve(test_func) as kwargs:
@@ -70,5 +73,5 @@ async def test_normal() -> None:
         "A": 3,
         "B": 1,
         "C": 1,
-        "D": 1
+        "D": 1,
     }

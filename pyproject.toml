@@ -13,6 +13,27 @@ build-backend = "uv_build"
 [tool.pyright]
 reportExplicitAny = false
 
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D212", "D203"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101",
+    "D101",
+    "D103",
+    "INP001",
+]
+"docs/*" = [
+    "S101",
+    "D101",
+    "D103",
+    "INP001",
+] 
+"src/prereq/errors.py" = [
+    "D101"
+]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
@@ -21,12 +42,10 @@ asyncio_default_test_loop_scope = "session"
 [dependency-groups]
 dev = [
     "coverage>=7.13.0",
-    "py-spy>=0.4.1",
-    "pyinstrument>=5.1.1",
     "pytest>=9.0.2",
     "pytest-asyncio>=1.3.0",
     "pytest-cov>=7.0.0",
-]
-fast = [
-    "graphlib2>=0.4.7",
+    "ruff>=0.14.10",
+    "sphinx>=9.0.4",
+    "sphinx-wagtail-theme>=6.5.0",
 ]
